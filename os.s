@@ -1,5 +1,8 @@
     .include "hw_setup.s"
 
+; Memory used by os.s $FC-$FF
+
+    .org $8100
 LOOP:
     SEI ; Set Interrupt
     LDA KBD_RPTR
@@ -88,24 +91,34 @@ EXECUTE_CMD:
     JSR LFCR
 
     LDA CMD
-    CMP #$48
+    CMP #$48 ; H
     BEQ CMD_HEX_DUMP
 
     LDA CMD
-    CMP #$53
+    CMP #$53 ; S
     BEQ CMD_STORE_HEX
 
     LDA CMD
-    CMP #$43
+    CMP #$52 ; R
+    BEQ CMD_RUN
+
+    LDA CMD
+    CMP #$43 ; C
     BEQ CMD_CLS
 
     JMP DONE_EXECUTE
+
 CMD_HEX_DUMP:
     JSR HEX_DUMP
     JMP DONE_EXECUTE
 
 CMD_STORE_HEX:
     JSR STORE_HEX
+    JMP DONE_EXECUTE
+
+CMD_RUN:
+    JMP JSR_AT_ADDR
+RUN_RETURN:
     JMP DONE_EXECUTE
 
 CMD_CLS:
@@ -175,7 +188,7 @@ HEX_DUMP:
 
     RTS
 
-STORE_HEX:
+GET_DEST_ADDR:
     LDX #$02
     LDA CMD, X
     STA BIOS_STR_ADDR
@@ -205,8 +218,11 @@ STORE_HEX:
 
     LDA BIOS_HEX_CNT
     STA $FE
+   
+    RTS
 
-    
+STORE_HEX:
+    JSR GET_DEST_ADDR    
     LDX #$07
     LDY #$00
     STY $FD
@@ -237,5 +253,10 @@ HEX_TO_STORE:
     BCC HEX_TO_STORE;
   
     RTS
+
+JSR_AT_ADDR:
+    JSR GET_DEST_ADDR    
+    JMP ($FE)
+
 
     .include "bios.s"
