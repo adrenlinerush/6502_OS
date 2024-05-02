@@ -53,7 +53,8 @@ CONTINUE:
 EXECUTE_CMD:
     LDX #$01
 
-    INC TEXT_FLAGS
+    LDA #$0F
+    STA TEXT_FLAGS
     LDY #$03
     STY BIOS_SYSCALL_N
     JSR $F000            ; Test Bios Adddress 
@@ -83,6 +84,7 @@ EXECUTE_CMD:
     LDY #$04            ; Print command
     STY BIOS_SYSCALL_N
     JSR $F000
+    JSR RESET_TERMINAL
     JSR LFCR
 
     LDA CMD
@@ -111,13 +113,11 @@ CMD_CLS:
     JSR CLS
 
 DONE_EXECUTE:
-    JSR RESET_TERMINAL
     JSR LFCR
-
     RTS
 
 RESET_TERMINAL:
-    LDA #$00   ; Regular Text
+    LDA #$00
     STA TEXT_FLAGS
     LDY #$03
     STY BIOS_SYSCALL_N

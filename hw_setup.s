@@ -52,7 +52,10 @@ RESET:
 
     LDA #$0E ; Set VIA2 Port A for SD CARD
     STA VIA2_DDRA
-
+  
+    LDA #$00
+    STA TEXT_FLAGS   
+ 
     JSR RESET_TERMINAL
     JSR CLS 
     JSR PROMPT
