@@ -53,8 +53,7 @@ CONTINUE:
 EXECUTE_CMD:
     LDX #$01
 
-    LDA #$01   ; BOLD
-    STA TEXT_FLAGS
+    INC TEXT_FLAGS
     LDY #$03
     STY BIOS_SYSCALL_N
     JSR $F000            ; Test Bios Adddress 
@@ -84,10 +83,15 @@ EXECUTE_CMD:
     LDY #$04            ; Print command
     STY BIOS_SYSCALL_N
     JSR $F000
+    JSR LFCR
 
     LDA CMD
     CMP #$48
     BEQ CMD_HEX_DUMP
+
+    LDA CMD
+    CMP #$53
+    BEQ CMD_STORE_HEX
 
     LDA CMD
     CMP #$43
@@ -98,12 +102,17 @@ CMD_HEX_DUMP:
     JSR HEX_DUMP
     JMP DONE_EXECUTE
 
+CMD_STORE_HEX:
+    JSR STORE_HEX
+    JMP DONE_EXECUTE
+
 CMD_CLS:
     JSR RESET_TERMINAL
     JSR CLS
 
 DONE_EXECUTE:
     JSR RESET_TERMINAL
+    JSR LFCR
 
     RTS
 
@@ -157,7 +166,76 @@ HEX_DUMP:
     STY BIOS_SYSCALL_N
     JSR $F000
 
+    LDA #$FF
+    STA BIOS_STR_ADDR
+    LDA #$01
+    STA BIOS_STR_LEN
+
+    JSR $F000
+
     RTS
 
+STORE_HEX:
+    LDX #$02
+    LDA CMD, X
+    STA BIOS_STR_ADDR
+    INX
+    LDA CMD, X
+    LDX #$01
+    STA BIOS_STR_ADDR, X
+
+    LDY #$07
+    STY BIOS_SYSCALL_N
+    JSR $F000
+
+    LDA BIOS_HEX_CNT
+    STA $FF
+
+    LDX #$04
+    LDA CMD, X
+    STA BIOS_STR_ADDR
+    INX
+    LDA CMD, X
+    LDX #$01
+    STA BIOS_STR_ADDR, X
+
+    LDY #$07
+    STY BIOS_SYSCALL_N
+    JSR $F000
+
+    LDA BIOS_HEX_CNT
+    STA $FE
+
+    
+    LDX #$07
+    LDY #$00
+    STY $FD
+HEX_TO_STORE:
+    LDA CMD, X
+    STA BIOS_STR_ADDR
+    INX
+    LDA CMD, X
+    STX $FC
+    LDX #$01
+    STA BIOS_STR_ADDR, X
+    LDX $FC
+
+    LDY #$07
+    STY BIOS_SYSCALL_N
+    JSR $F000
+
+    LDA BIOS_HEX_CNT
+    LDY $FD
+    STA ($FE), Y
+
+    INY
+    STY $FD
+    INX
+    INX
+
+    CPX CMD_LEN
+    BCC HEX_TO_STORE;
+  
+    RTS
 
     .include "bios.s"
