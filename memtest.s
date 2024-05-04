@@ -1,8 +1,5 @@
 StartAddressH = $04
 EndAddressH   = $6F
-Pointer     = $0
-PointerH    = $1
-TestValue   = $2
 	.org $FB00
 
 MemLoopTop:
@@ -27,12 +24,12 @@ MemWriteLoop:
 	LDA #StartAddressH
 	STA PointerH
 MemCheckLoop:
+        JSR DisplayCurAddr
 	LDA (Pointer),y
 	CMP TestValue
 	BNE ErrorMsg
 ErrorReturn:
 	INY
-        JSR DisplayCurAddr
 	BNE MemCheckLoop
 	INC PointerH
 	LDX PointerH
@@ -108,8 +105,8 @@ Waiting:
         LDA KBD_RPTR
         CMP KBD_WPTR
         CLI
-        BNE ExitMemTest
-	JMP Waiting
+        BEQ Waiting
+	JMP ExitMemTest
  
 ExitMemTest:
         JSR LFCR

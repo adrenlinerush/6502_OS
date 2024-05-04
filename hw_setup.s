@@ -26,6 +26,10 @@ BIOS_HEX_CNT = $10
 CMD = $0300
 RETURN = $12
 
+Pointer = $13
+PointerH = $14
+TestValue = $15
+
 SD_CS   = %00001000
 SD_SCK  = %00000100
 SD_MOSI = %00000010
