@@ -1,3 +1,5 @@
+.segment "BIOS"
+
 ; Basic Input and Output Functions
 ;BOLD   = $0F
 ;ITALIC = $08
@@ -7,8 +9,9 @@
 
 RELEASE = %00000001
 SHIFT   = %00000010
+CTRL    = %00000100
 
-    .org $F000
+;    .org $F000
 
 BIOS_SYSCALL:
     PHA
@@ -149,6 +152,13 @@ KBD_IRQ:
     CPX #$59
     BEQ KBD_SHIFT
 
+    CPX #$14
+    BEQ KBD_CTRL
+
+    CPX #$21
+    BEQ KBD_IS_CTRL_C
+    
+KBD_NOT_CTRL_C:
     LDA KBD_FLAGS
     AND #SHIFT
     BNE KBD_SHIFTED_KEY
@@ -201,6 +211,34 @@ KBD_SHIFT_UP:
 
     JMP KBD_CLR_RELEASE
 
+KBD_IS_CTRL_C:
+    LDA KBD_FLAGS
+    AND #CTRL
+    BEQ KBD_NOT_CTRL_C
+
+    LDA #$01
+    STA R_CTRL_C
+
+    JMP KBD_EXIT
+
+KBD_CTRL:
+    LDA KBD_FLAGS
+    AND #CTRL
+    BNE KBD_CTRL_UP
+    
+KBD_CTRL_DOWN:
+    LDA KBD_FLAGS
+    ORA #CTRL
+    STA KBD_FLAGS
+
+    JMP KBD_EXIT
+
+KBD_CTRL_UP:
+    LDA KBD_FLAGS
+    EOR #CTRL
+    STA KBD_FLAGS
+
+    JMP KBD_CLR_RELEASE
     
 KBD_RELEASE:
     LDA KBD_FLAGS
@@ -394,10 +432,33 @@ SKIPLETTER:
     JSR ECHO
     RTS 
 
+MONRDKEY:
+    ;STX BIOS_SCRATCH
+    SEI
+    LDA KBD_RPTR
+    CMP KBD_WPTR
+    CLI
+    BNE CHRIN_KEY_PRESSED
+    
+    CLC
+    JMP EXIT_CHRIN
+CHRIN_KEY_PRESSED:
+    LDX KBD_RPTR
+    INC KBD_RPTR
+    LDA KBD, X
+    JSR ECHO
+    SEC 
+EXIT_CHRIN:
+    ;LDX BIOS_SCRATCH
+    RTS
+
+MONCOUT:
 ECHO:
     STA PORTB
+    ;STA BIOS_SCRATCH
     LDA #$00
     STA PORTB
+    ;LDA BIOS_SCRATCH
     RTS
 
 LFCR:
@@ -405,7 +466,6 @@ LFCR:
     JSR ECHO
     LDA #$0D ; Cairrage Return
     JSR ECHO
-   
     RTS
 
 CLS:
@@ -435,7 +495,15 @@ DELAY_REG_X_CYCLES:
     BNE DELAY_REG_X_CYCLES
     RTS
 
-  .org $fd00
+LOAD:
+    RTS
+
+SAVE:
+    RTS
+
+  .include "memtest.s"
+
+.segment "KEYMAPS"
 KEYMAP:
   .byte $00,$00,$00,$00,$00,$00,$00,$00,$00,$00,$00,$00,$00,$09,"`",$00
   .byte $00,$00,$00,$00,$00,"q1",$00,$00,$00,"zsaw2",$00
@@ -471,9 +539,9 @@ KEYMAP_SHIFTED:
   .byte $00,$00,$00,$00,$00,$00,$00,$00,$00,$00,$00,$00,$00,$00,$00,$00
   .byte $00,$00,$00,$00,$00,$00,$00,$00,$00,$00,$00,$00,$00,$00,$00,$00
 
-  .include "memtest.s"
 
-  .org $fffa
+;  .org $fffa
+.segment "RESETVEC"
   .word NMI
   .word RESET
   .word IRQ

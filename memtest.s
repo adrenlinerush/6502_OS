@@ -1,7 +1,7 @@
 StartAddressH = $04
-EndAddressH   = $6F
-	.org $FB00
-
+EndAddressH   = $70
+	;.org $FB00
+.segment "MEMTEST"
 MemLoopTop:
         LDA #$00
 	STA Pointer
@@ -86,7 +86,7 @@ WaitError:
         STX BIOS_SYSCALL_N
         LDX #$37
         STX BIOS_STR_LEN
-        JSR $F000
+        JSR BIOS_SYSCALL
         JMP Waiting
 
 WaitAnyKey:
@@ -99,7 +99,7 @@ WaitAnyKey:
         STX BIOS_SYSCALL_N
         LDX #$24
         STX BIOS_STR_LEN
-        JSR $F000
+        JSR BIOS_SYSCALL
 Waiting:
         SEI
         LDA KBD_RPTR

@@ -2,7 +2,10 @@
 
 ; Memory used by os.s $FC-$FF
 
-    .org $8100
+    ;.org $8100
+
+.segment "AUSMON"
+
 LOOP:
     SEI ; Set Interrupt
     LDA KBD_RPTR
@@ -60,7 +63,7 @@ EXECUTE_CMD:
     STA TEXT_FLAGS
     LDY #$03
     STY BIOS_SYSCALL_N
-    JSR $F000            ; Test Bios Adddress 
+    JSR BIOS_SYSCALL
 
     LDA #$33             ; BLACK
     STA FG_COLOR
@@ -68,7 +71,7 @@ EXECUTE_CMD:
     STA FG_COLOR, X
     LDY #$01
     STY BIOS_SYSCALL_N
-    JSR $F000            ; Test Bios Adddress 
+    JSR BIOS_SYSCALL
 
     LDA #$34             ; RED
     STA BG_COLOR
@@ -76,7 +79,7 @@ EXECUTE_CMD:
     STA BG_COLOR, X
     LDY #$02
     STY BIOS_SYSCALL_N
-    JSR $F000            ; Test Bios Adddress 
+    JSR BIOS_SYSCALL
 
     LDA #<CMD        
     STA BIOS_STR_ADDR
@@ -86,7 +89,7 @@ EXECUTE_CMD:
     STA BIOS_STR_LEN
     LDY #$04            ; Print command
     STY BIOS_SYSCALL_N
-    JSR $F000
+    JSR BIOS_SYSCALL
     JSR RESET_TERMINAL
     JSR LFCR
 
@@ -110,6 +113,10 @@ EXECUTE_CMD:
     CMP #$43 ; C
     BEQ CMD_CLS
 
+    LDA CMD
+    CMP #$42
+    BEQ CMD_MSBASIC
+
     JMP DONE_EXECUTE
 
 CMD_HEX_DUMP:
@@ -130,6 +137,11 @@ RUN_RETURN:
 
 CMD_MEMTEST:
     JSR MemLoopTop
+    JMP DONE_EXECUTE
+
+CMD_MSBASIC:
+    JMP COLD_START
+    JMP DONE_EXECUTE
 
 CMD_CLS:
     JSR RESET_TERMINAL
@@ -143,7 +155,7 @@ RESET_TERMINAL:
     STA TEXT_FLAGS
     LDY #$03
     STY BIOS_SYSCALL_N
-    JSR $F000            ; Test Bios Adddress 
+    JSR BIOS_SYSCALL 
 
     LDA #$33             ; GREEN
     STA FG_COLOR
@@ -151,7 +163,7 @@ RESET_TERMINAL:
     STA FG_COLOR, X
     LDY #$01
     STY BIOS_SYSCALL_N
-    JSR $F000            ; Test Bios Adddress 
+    JSR BIOS_SYSCALL
 
     LDA #$34             ; BLACK
     STA BG_COLOR
@@ -159,7 +171,7 @@ RESET_TERMINAL:
     STA BG_COLOR, X
     LDY #$02
     STY BIOS_SYSCALL_N
-    JSR $F000            ; Test Bios Adddress 
+    JSR BIOS_SYSCALL
 
 
     RTS
@@ -175,7 +187,7 @@ HEX_DUMP:
 
     LDY #$07
     STY BIOS_SYSCALL_N
-    JSR $F000
+    JSR BIOS_SYSCALL
 
     LDA #$00
     STA BIOS_STR_ADDR
@@ -186,14 +198,14 @@ HEX_DUMP:
 
     LDY #$05
     STY BIOS_SYSCALL_N
-    JSR $F000
+    JSR BIOS_SYSCALL
 
     LDA #$FF
     STA BIOS_STR_ADDR
     LDA #$01
     STA BIOS_STR_LEN
 
-    JSR $F000
+    JSR BIOS_SYSCALL
 
     RTS
 
@@ -208,7 +220,7 @@ GET_DEST_ADDR:
 
     LDY #$07
     STY BIOS_SYSCALL_N
-    JSR $F000
+    JSR BIOS_SYSCALL
 
     LDA BIOS_HEX_CNT
     STA $FF
@@ -223,7 +235,7 @@ GET_DEST_ADDR:
 
     LDY #$07
     STY BIOS_SYSCALL_N
-    JSR $F000
+    JSR BIOS_SYSCALL
 
     LDA BIOS_HEX_CNT
     STA $FE
@@ -247,7 +259,7 @@ HEX_TO_STORE:
 
     LDY #$07
     STY BIOS_SYSCALL_N
-    JSR $F000
+    JSR BIOS_SYSCALL
 
     LDA BIOS_HEX_CNT
     LDY $FD
