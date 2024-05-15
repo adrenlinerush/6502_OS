@@ -1,7 +1,13 @@
 KBD_WPTR = $00
 KBD_RPTR = $01
 KBD_FLAGS = $02
-R_CTRL_C = $16
+R_CTRL_C = $17
+R_BIOS_1 = $18
+R_OS_1 = $19
+R_OS_2 = $1A
+R_OS_3 = $1B
+R_OS_4 = $1C
+
 
 CURSOR_X = $03
 CURSOR_Y = $05
@@ -15,14 +21,14 @@ BIOS_STR_ADDR = $0D
 BIOS_STR_LEN = $0F
 BIOS_HEX_CNT = $10
 CMD_RUN_RETURN = $12
-BIOS_SCRATCH = $16
 
-Pointer = $13
-PointerH = $14
-TestValue = $15
+Pointer = $14
+PointerH = $15
+TestValue = $16
 
-KBD = $0200
-CMD = $0300
+.segment "BUFFERS"
+KBD_BUFFER: .res $100
+CMD: .res $100
 
 .segment "HWSETUP"
 
@@ -42,8 +48,6 @@ IER = $7C0E
 
 VIA2_PORTA = $7A01
 VIA2_DDRA  = $7A03
-
-;  .org $8000
 
 RESET:
     LDA #$00

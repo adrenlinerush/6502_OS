@@ -11,8 +11,6 @@ RELEASE = %00000001
 SHIFT   = %00000010
 CTRL    = %00000100
 
-;    .org $F000
-
 BIOS_SYSCALL:
     PHA
     TXA
@@ -188,7 +186,7 @@ KBD_CLR_RELEASE:
 KBD_PUSHKEY:
     LDX KBD_WPTR
     TYA
-    STA KBD, X
+    STA KBD_BUFFER, X
     INC KBD_WPTR
     JMP KBD_EXIT
 
@@ -413,6 +411,7 @@ SEND_ESC_SEQ:
     JSR ECHO
     LDA #$5B ; [
     JSR ECHO
+    RTS
   
 ECHO_HEX:
     PHA 
@@ -433,32 +432,33 @@ SKIPLETTER:
     RTS 
 
 MONRDKEY:
-    ;STX BIOS_SCRATCH
+    STX R_BIOS_1
     SEI
-    LDA KBD_RPTR
-    CMP KBD_WPTR
+    LDX KBD_RPTR
+    CPX KBD_WPTR
     CLI
     BNE CHRIN_KEY_PRESSED
     
+    LDA #$00
     CLC
     JMP EXIT_CHRIN
 CHRIN_KEY_PRESSED:
     LDX KBD_RPTR
     INC KBD_RPTR
-    LDA KBD, X
-    JSR ECHO
+    LDA KBD_BUFFER, X
+    JSR MONCOUT
     SEC 
 EXIT_CHRIN:
-    ;LDX BIOS_SCRATCH
+    LDX R_BIOS_1
     RTS
 
 MONCOUT:
 ECHO:
+    PHA
     STA PORTB
-    ;STA BIOS_SCRATCH
     LDA #$00
     STA PORTB
-    ;LDA BIOS_SCRATCH
+    PLA
     RTS
 
 LFCR:
@@ -540,7 +540,6 @@ KEYMAP_SHIFTED:
   .byte $00,$00,$00,$00,$00,$00,$00,$00,$00,$00,$00,$00,$00,$00,$00,$00
 
 
-;  .org $fffa
 .segment "RESETVEC"
   .word NMI
   .word RESET

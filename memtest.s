@@ -1,6 +1,6 @@
 StartAddressH = $04
 EndAddressH   = $70
-	;.org $FB00
+
 .segment "MEMTEST"
 MemLoopTop:
         LDA #$00

@@ -1,9 +1,5 @@
     .include "hw_setup.s"
 
-; Memory used by os.s $FC-$FF
-
-    ;.org $8100
-
 .segment "AUSMON"
 
 LOOP:
@@ -17,7 +13,7 @@ LOOP:
 KEY_PRESSED:
     LDX KBD_RPTR
     INC KBD_RPTR
-    LDA KBD, X
+    LDA KBD_BUFFER, X
     CMP #$0A ; enter
     BEQ KEY_ENTER
     CMP #$08 ; backpace
@@ -223,7 +219,7 @@ GET_DEST_ADDR:
     JSR BIOS_SYSCALL
 
     LDA BIOS_HEX_CNT
-    STA $FF
+    STA R_OS_4
 
     LDX #$04
     LDA CMD, X
@@ -238,7 +234,7 @@ GET_DEST_ADDR:
     JSR BIOS_SYSCALL
 
     LDA BIOS_HEX_CNT
-    STA $FE
+    STA R_OS_3
    
     RTS
 
@@ -246,27 +242,27 @@ STORE_HEX:
     JSR GET_DEST_ADDR    
     LDX #$07
     LDY #$00
-    STY $FD
+    STY R_OS_2
 HEX_TO_STORE:
     LDA CMD, X
     STA BIOS_STR_ADDR
     INX
     LDA CMD, X
-    STX $FC
+    STX R_OS_1
     LDX #$01
     STA BIOS_STR_ADDR, X
-    LDX $FC
+    LDX R_OS_1
 
     LDY #$07
     STY BIOS_SYSCALL_N
     JSR BIOS_SYSCALL
 
     LDA BIOS_HEX_CNT
-    LDY $FD
-    STA ($FE), Y
+    LDY R_OS_2
+    STA (R_OS_3), Y
 
     INY
-    STY $FD
+    STY R_OS_2
     INX
     INX
 
@@ -277,7 +273,7 @@ HEX_TO_STORE:
 
 JSR_AT_ADDR:
     JSR GET_DEST_ADDR    
-    JMP ($FE)
+    JMP (R_OS_3)
 
 
     .include "bios.s"
