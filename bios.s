@@ -138,7 +138,7 @@ KBD_IRQ:
     PHA
    
 
-    LDX #$02; try delaying so I get correct scan code
+    LDX #$03; try delaying so I get correct scan code
     JSR DELAY_REG_X_CYCLES
     
     LDX PORTA
@@ -453,11 +453,13 @@ EXIT_CHRIN:
     RTS
 
 MONRDKEY_ECHO:
+    CMP #$08
+    BEQ MONRDKEY_BKSPC
     CMP #$0A
     BNE ECHO
-    JSR LFCR
+    ;JSR LFCR
     LDA #$0D
-    RTS
+    ;RTS
 MONCOUT:
 ECHO:
     PHA
@@ -465,6 +467,13 @@ ECHO:
     LDA #$00
     STA PORTB
     PLA
+    RTS
+MONRDKEY_BKSPC:
+    JSR ECHO
+    JSR SEND_ESC_SEQ
+    LDA #$4A ; J
+    JSR ECHO
+    LDA #$08
     RTS
 
 LFCR:

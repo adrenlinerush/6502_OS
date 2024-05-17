@@ -11,4 +11,6 @@ is_cntc:
         ; clear flag
         LDA #$00
         STA $17
+        LDA #3
+        SEC
         PLA

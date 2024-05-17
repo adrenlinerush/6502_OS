@@ -54,6 +54,10 @@ INLIN2:
         jmp     INLIN
 INLINAIM:
     .endif
+    .ifdef AUSTIN
+        cmp #$08 ; Backspace
+        beq     L2420
+    .endif
     .ifndef CONFIG_NO_LINE_EDITING
         cmp     #$07
         beq     L2443
