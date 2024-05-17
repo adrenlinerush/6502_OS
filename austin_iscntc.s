@@ -1,11 +1,14 @@
 ISCNTC:
         ; check flag set by bios
-        LDA $16
+        PHA
+        LDA $17
         CMP #$01
         BEQ is_cntc
 not_cntc:
+        PLA
         RTS
 is_cntc:
         ; clear flag
         LDA #$00
-        STA $16
+        STA $17
+        PLA

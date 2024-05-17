@@ -136,6 +136,11 @@ CMD_MEMTEST:
     JMP DONE_EXECUTE
 
 CMD_MSBASIC:
+    LDA #$00
+    STA R_CTRL_C
+    STA KBD_WPTR
+    STA KBD_RPTR
+    JSR CLR_KBD_BUFFER
     JMP COLD_START
     JMP DONE_EXECUTE
 
@@ -275,5 +280,14 @@ JSR_AT_ADDR:
     JSR GET_DEST_ADDR    
     JMP (R_OS_3)
 
+CLR_KBD_BUFFER:
+    LDA #$00
+    LDY #$02
+ClearLoop:
+    STA $0200,Y
+    INY       
+    CPY #$FF 
+    BNE ClearLoop 
+    RTS          
 
     .include "bios.s"

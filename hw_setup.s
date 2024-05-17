@@ -50,9 +50,6 @@ VIA2_PORTA = $7A01
 VIA2_DDRA  = $7A03
 
 RESET:
-    LDA #$00
-    STA CMD_LEN
-
     LDA #<RUN_RETURN
     STA CMD_RUN_RETURN
     LDX #$01
@@ -64,6 +61,7 @@ RESET:
     STA KBD_WPTR
     STA KBD_RPTR
     STA R_CTRL_C
+    STA CMD_LEN
 
     LDA #$ff ; Set VIA Port B to output
     STA DDRB
@@ -71,8 +69,8 @@ RESET:
     LDA #$00 ; Set VIA Port A to input
     STA DDRA
 
-    LDA #$0E ; Set VIA2 Port A for SD CARD
-    STA VIA2_DDRA
+    ;LDA #$0E ; Set VIA2 Port A for SD CARD
+    ;STA VIA2_DDRA
 
     ;LDA #$08 ; Set PCR to Handsake
     ;STA PCR
