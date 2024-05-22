@@ -138,7 +138,7 @@ KBD_IRQ:
     PHA
    
 
-    LDX #$03; try delaying so I get correct scan code
+    LDX #$02 ;try delaying so I get correct scan code
     JSR DELAY_REG_X_CYCLES
     
     LDX PORTA
@@ -269,7 +269,7 @@ MV_CURSOR:
     LDX #$01
     LDA CURSOR_Y, X 
     JSR ECHO
-    LDA #$48 ; H
+    LDA #$66 ; f
     JSR ECHO
 
     RTS
@@ -415,6 +415,7 @@ SEND_ESC_SEQ:
   
 ECHO_HEX:
     PHA 
+    STA R_BIOS_1
     ROR
     ROR
     ROR
@@ -429,6 +430,7 @@ ECHO_NIBBLE:
 SKIPLETTER:
     ADC #48
     JSR ECHO
+    LDA R_BIOS_1
     RTS 
 
 MONRDKEY:
@@ -542,7 +544,7 @@ KEYMAP_SHIFTED:
   .byte $00,"CXDE$#",$00,$00," VFTR%",$00
   .byte $00,"NBHGY^",$00,$00,$00,"MJU&*",$00
   .byte $00,"<KIO)(",$00,$00,">?L:P_",$00
-  .byte $00,$00,'"',$00,"{+",$00,$00,$00,$00,$0A,"}",$00,"?",$00,$00
+  .byte $00,$00,'"',$00,"{+",$00,$00,$00,$00,$0A,"}",$00,"|",$00,$00
   .byte $00,$00,$00,$00,$00,$00,$08,$00,$00,"1",$00,"47",$00,$00,$00 ; Nubmer Pad + BSP Fix Special Keys
   .byte "0.2568",$1b,$00,$00,"+3-*9",$00,$00                         ; Number Pad
   .byte $00,$00,$00,$00,$00,$00,$00,$00,$00,$00,$00,$00,$00,$00,$00,$00

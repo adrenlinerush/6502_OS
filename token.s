@@ -26,6 +26,11 @@
 .else
 		keyword_rts "REM", REM, TOKEN_REM
 .endif
+.ifdef AUSTIN
+		keyword_rts "CLS", CLS
+                keyword_rts "BIOS", BIOS_SYSCALL
+                keyword_rts "RTERM", RESET_TERMINAL
+.endif
 		keyword_rts "STOP", STOP
 		keyword_rts "ON", ON
 .ifdef CONFIG_NULL
