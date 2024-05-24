@@ -126,7 +126,11 @@ IS_DIGIT2:
     RTS  
 
 IRQ:
+    LDA IFR
+    AND #%10000010 ; CA1 triggered IRQ
+    BEQ IRQ_NKBD
     JSR KBD_IRQ
+IRQ_NKBD:
     RTI
 
 KBD_IRQ:
@@ -136,10 +140,6 @@ KBD_IRQ:
     PHA
     TYA
     PHA
-   
-
-    LDX #$02 ;try delaying so I get correct scan code
-    JSR DELAY_REG_X_CYCLES
     
     LDX PORTA
     CPX #$F0 ; Release Code
@@ -244,6 +244,8 @@ KBD_RELEASE:
     STA KBD_FLAGS
 
 KBD_EXIT:
+    ;LDA #%10000000
+    ;STA IFR
     ; restore regiters before returning
     PLA
     TAY
@@ -466,8 +468,17 @@ MONCOUT:
 ECHO:
     PHA
     STA PORTB
+    TXA
+    PHA
+    LDX #$0B
+    JSR DELAY_REG_X_CYCLES
+    TAX
     LDA #$00
     STA PORTB
+    LDX #$09
+    JSR DELAY_REG_X_CYCLES
+    PLA
+    TAX
     PLA
     RTS
 MONRDKEY_BKSPC:

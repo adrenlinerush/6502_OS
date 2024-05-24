@@ -37,7 +37,7 @@ PORTA = $7C01
 DDRB = $7C02
 DDRA = $7C03
 
-PCR = $7C0C
+PCR = $7C0C                                                                                                                                                      
 IFR = $7C0D
 IER = $7C0E
 
@@ -63,6 +63,12 @@ RESET:
 
     LDA #$00 ; Set VIA Port A to input
     STA DDRA
+
+    LDA #$00
+    STA PCR
+    LDA #$81
+    STA IER
+
 
     ;LDA #$0E ; Set VIA2 Port A for SD CARD
     ;STA VIA2_DDRA
