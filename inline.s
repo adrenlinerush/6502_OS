@@ -81,17 +81,25 @@ INLINAIM:
         cmp     #$7D
       .endif
         bcs     INLIN2
+        .ifndef AUSTIN
         cmp     #$40 ; @
+        .endif
       .ifdef AIM65
         beq     LB35F
       .else
+        .ifndef AUSTIN
         beq     L2423
+        .endif
       .ifdef MICROTAN
         cmp     #$7F ; DEL
       .else
+        .ifndef AUSTIN
         cmp     #$5F ; _
+        .endif
       .endif
+        .ifndef AUSTIN
         beq     L2420
+        .endif
       .endif
 L2443:
       .ifdef MICROTAN

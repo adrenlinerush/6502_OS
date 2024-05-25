@@ -34,4 +34,5 @@
 
 .ifdef AUSTIN
 .include "os.s"
+.include "austin_extra.s"
 .endif

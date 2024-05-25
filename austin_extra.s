@@ -1,0 +1,118 @@
+.segment "EXTRA"
+
+; Moves cursor to Column, Row
+; Syntax: LOCATE XX,YY
+
+
+TESTVAR:
+   PHA
+   TXA
+   PHA
+   TYA
+   PHA
+
+   JSR CHRGOT
+   JSR ECHO
+   JSR ISLETC
+   BCC NOTVAR
+   CLC
+   JSR LFCR
+   JSR PTRGET
+   LDX #$00
+   LDY VARPNT+1
+   LDA (VARPNT,X)
+   JSR ECHO
+   JSR LFCR
+   LDA (VARPNT), Y
+   JSR ECHO
+   JSR LFCR
+   LDA VARPNT
+   JSR ECHO_HEX
+   LDA VARPNT+1
+   JSR ECHO_HEX
+
+NOTVAR:
+   PLA
+   TAY
+   PLA
+   TAX
+   PLA
+   RTS
+
+LOCATE:
+   PHA
+   TXA
+   PHA
+
+   LDX #$01
+   DEC TXTPTR
+   JSR CHRGET
+   STA CURSOR_X   
+   JSR CHRGET
+   STA CURSOR_X, X
+   JSR CHRGET ; should be ,
+   JSR CHRGET
+   STA CURSOR_Y
+   JSR CHRGET
+   STA CURSOR_Y, X
+
+   LDX #$06
+   STX BIOS_SYSCALL_N
+   JSR BIOS_SYSCALL
+ 
+   INC TXTPTR
+
+   PLA
+   TAX
+   PLA
+
+   RTS
+
+
+FGCOLOR:
+   PHA
+   TXA
+   PHA
+
+   LDX #$01
+   DEC TXTPTR
+   JSR CHRGET
+   STA FG_COLOR
+   JSR CHRGET
+   STA FG_COLOR, X
+
+   LDX #$01
+   STX BIOS_SYSCALL_N
+   JSR BIOS_SYSCALL
+ 
+   INC TXTPTR
+
+   PLA
+   TAX
+   PLA
+
+   RTS
+
+BGCOLOR:
+   PHA
+   TXA
+   PHA
+
+   LDX #$01
+   DEC TXTPTR
+   JSR CHRGET
+   STA BG_COLOR
+   JSR CHRGET
+   STA BG_COLOR, X
+
+   LDX #$02
+   STX BIOS_SYSCALL_N
+   JSR BIOS_SYSCALL
+ 
+   INC TXTPTR
+
+   PLA
+   TAX
+   PLA
+
+   RTS

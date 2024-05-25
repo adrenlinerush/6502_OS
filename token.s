@@ -28,8 +28,11 @@
 .endif
 .ifdef AUSTIN
 		keyword_rts "CLS", CLS
-                keyword_rts "BIOS", BIOS_SYSCALL
-                keyword_rts "RTERM", RESET_TERMINAL
+                ;keyword_rts "BIOS", BIOS_SYSCALL
+                keyword_rts "TESTVAR", TESTVAR
+                keyword_rts "LOCATE", LOCATE
+                keyword_rts "FGCOLOR", FGCOLOR
+                keyword_rts "BGCOLOR", BGCOLOR
 .endif
 		keyword_rts "STOP", STOP
 		keyword_rts "ON", ON
