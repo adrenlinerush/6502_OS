@@ -484,7 +484,7 @@ ECHO:
 MONRDKEY_BKSPC:
     JSR ECHO
     JSR SEND_ESC_SEQ
-    LDA #$4A ; J
+    LDA #$4B ; K
     JSR ECHO
     LDA #$08
     RTS

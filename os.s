@@ -40,7 +40,7 @@ KEY_BKSP:
     DEC CMD_LEN
     JSR ECHO ; Send Backspace
     JSR SEND_ESC_SEQ ; Erase to end of screen
-    LDA #$4A ; J 
+    LDA #$4B ; K 
     JSR ECHO
     JMP LOOP
 

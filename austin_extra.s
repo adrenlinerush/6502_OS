@@ -32,9 +32,6 @@ RETVAL:
 
   RTS
 
-; Moves cursor to Column, Row
-; Syntax: LOCATE XX,YY
-
 LOCATE:
    JSR RETVAL
    LDA $0100,X
@@ -106,3 +103,35 @@ BGCOLOR:
    JSR BIOS_SYSCALL
  
    RTS
+
+SETTEXT:
+   JSR RETVAL
+   LDA $0100,X
+   SEC
+   SBC #$30
+   TAY
+   INX
+   LDA $0100,X
+   CMP #$00
+   BEQ SETTEXT_SYSCALL
+
+   SEC
+   SBC #$30
+SETTEXT_ADD_TEN:
+   CLC
+   ADC #$0A
+   DEY
+   CPY #$00
+   BNE SETTEXT_ADD_TEN
+   TAY
+
+SETTEXT_SYSCALL:
+   TYA
+   STA TEXT_FLAGS
+   LDX #$03
+   STX BIOS_SYSCALL_N
+   JSR BIOS_SYSCALL
+
+   RTS
+   
+
