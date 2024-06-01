@@ -1,6 +1,8 @@
     .include "hw_setup.s"
 
 .segment "AUSMON"
+    .include "libsd.s"
+    .include "libfat32.s"
 
 LOOP:
     SEI ; Set Interrupt
@@ -110,6 +112,18 @@ EXECUTE_CMD:
     BEQ CMD_CLS
 
     LDA CMD
+    CMP #'L' ; 
+    BEQ CMD_LOAD_FILE
+
+    LDA CMD
+    CMP #'D' ; 
+    BEQ CMD_DISP_FILE
+
+    LDA CMD
+    CMP #'F'
+    BEQ CMD_DIR
+
+    LDA CMD
     CMP #$42
     BEQ CMD_MSBASIC
 
@@ -138,6 +152,31 @@ CMD_MEMTEST:
 CMD_MSBASIC:
     JSR CLR_KBD_BUFFER
     JMP COLD_START
+    JMP DONE_EXECUTE
+
+CMD_LOAD_FILE:
+    JSR sd_init
+    BCS LOAD_FILE_EXIT
+    JSR fat32_init
+    BCS LOAD_FILE_EXIT
+    JSR LOADFILE
+LOAD_FILE_EXIT:
+    JSR LFCR
+    JMP DONE_EXECUTE
+
+CMD_DISP_FILE:
+    JSR DISPLAYFILE
+    JSR LFCR
+    JMP DONE_EXECUTE
+
+CMD_DIR:
+    JSR sd_init
+    BCS LOAD_FILE_EXIT
+    JSR fat32_init
+    BCS LOAD_FILE_EXIT
+
+    JSR DIRECTORYLISTING
+    JSR LFCR
     JMP DONE_EXECUTE
 
 CMD_CLS:
@@ -289,5 +328,207 @@ ClearLoop:
     BNE ClearLoop 
     RTS          
 
+LOADFILE:
+  JSR fat32_openroot
+  LDA #'R'
+  JSR ECHO
+  LDX #$01
+CONTINUELOAD:
+  LDY #$00
+NEXTCHAR:
+  INY
+  INX
+  CPY #$0D
+  BEQ OPENFILE
+  LDA CMD, X
+  JSR ECHO
+  CMP #'\'
+  BEQ OPENDIR
+  CMP #'.'
+  BEQ PADFILE
+  STX R_OS_1
+  STY R_OS_2
+  LDX R_OS_2
+  STA CMD+239,X
+  LDX R_OS_1
+  JMP NEXTCHAR
+
+PADFILE:
+  CPY #$09
+  BEQ DONEPADDING
+  STX R_OS_1
+  STY R_OS_2
+  LDX R_OS_2
+  LDA #$20
+  STA CMD+239,X
+  LDX R_OS_1
+  INY
+  JMP PADFILE
+DONEPADDING:
+  DEY
+  JMP NEXTCHAR
+
+OPENDIR:
+  STX R_OS_1
+  JSR PAD
+  JSR FINDSUBDIR
+  BCS NOTFOUND
+  JSR fat32_opendirent
+  LDX R_OS_1
+  JMP CONTINUELOAD
+
+OPENFILE:
+  LDA #'O'
+  JSR ECHO
+  JSR FINDFILE
+  BCS NOTFOUND
+  JSR fat32_opendirent
+ 
+  LDA #'F'
+  JSR ECHO
+
+  ; Read file contents into buffer
+  lda #<buffer
+  sta fat32_address
+  lda #>buffer
+  sta fat32_address+1
+
+  jsr fat32_file_read
+
+  RTS
+
+DISPLAYFILE:
+  LDA #$00
+  STA R_OS_1
+  LDA #>buffer
+  STA R_OS_2
+DISPLAYNEXTPAGE:
+  LDY #$00
+NEXTCHARINFILE:
+  LDA (R_OS_1),Y
+  JSR ECHO
+
+  INY
+  CMP #$00
+  BEQ DONEDISPLAY
+
+  CPY #$00
+  BEQ NEXTPAGE
+
+  JMP NEXTCHARINFILE
+NEXTPAGE:
+  INC R_OS_2
+  JMP DISPLAYNEXTPAGE
+DONEDISPLAY:
+  RTS
+
+NOTFOUND:
+  LDA #<FILENOTFOUNDERRORMSG
+  STA BIOS_STR_ADDR
+  LDX #$01
+  LDA #>FILENOTFOUNDERRORMSG
+  STA BIOS_STR_ADDR, X
+  LDX #$04
+  STX BIOS_SYSCALL_N
+  LDX #$14
+  STX BIOS_STR_LEN
+  JSR BIOS_SYSCALL
+
+  RTS
+ 
+FILENOTFOUNDERRORMSG:
+  .byte "Unable to find file."
+
+PAD:
+  CPY #$0C
+  BEQ DONEPAD
+  LDA #$00
+  STX R_OS_1
+  STY R_OS_2
+  LDX R_OS_2
+  LDA #$20
+  STA CMD+239,X
+  LDX R_OS_1
+  INY
+  JMP PAD
+DONEPAD:
+  RTS
+
+FINDFILE:
+  ldx #$F0
+  ldy #$03
+  jsr fat32_finddirent
+  RTS 
+
+FINDSUBDIR:
+  ldx #$F0
+  ldy #$03
+  jsr fat32_finddirent
+  RTS
+
+DIRECTORYLISTING:
+  JSR fat32_openroot
+  LDA CMD_LEN
+  CMP #$1
+  BNE CHANGEDIR
+NEXTITEM:
+  JSR LFCR
+  JSR fat32_readdirent
+  BCS NOMOREITEMS
+  LDY #$00
+ITEMCHAR:
+  LDA (zp_sd_address),Y
+  JSR ECHO
+  INY
+  CPY #$08
+  BEQ EXTENSION
+  CPY #$0B
+  BEQ NEXTITEM
+  JMP ITEMCHAR
+EXTENSION:
+  LDA #$09
+  JSR ECHO
+  JMP ITEMCHAR
+NOMOREITEMS:
+  RTS
+
+CHANGEDIR:
+  LDX #$01
+NEXTDIR:
+  LDY #$00
+NEXTCHARDIR:
+  INY
+  INX
+  LDA CMD, X
+  JSR ECHO
+  CPX CMD_LEN
+  BEQ ENDOFPATH
+  CMP #'\'
+  BEQ CHANGEDIRNEST
+  STX R_OS_1
+  STY R_OS_2
+  LDX R_OS_2
+  STA CMD+239,X
+  LDX R_OS_1
+  JMP NEXTCHARDIR
+NEST:
+  JSR CHANGEDIRNEST
+ENDOFPATH:
+  JSR PAD
+  JSR FINDSUBDIR
+  BCS NESTNOTFOUND
+  JSR fat32_opendirent
+  JMP NEXTITEM
+NESTNOTFOUND:
+  JMP NOTFOUND
+
+CHANGEDIRNEST:
+  STX R_OS_1
+  JSR PAD
+  JSR FINDSUBDIR
+  BCS NESTNOTFOUND
+  JSR fat32_opendirent
+  LDX R_OS_1
+  JMP NEXTDIR
 
     .include "bios.s"

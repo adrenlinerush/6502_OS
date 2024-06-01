@@ -26,6 +26,21 @@ Pointer = $14
 PointerH = $15
 TestValue = $16
 
+SD_CS   = %00001000
+SD_SCK  = %00000100
+SD_MOSI = %00000010
+SD_MISO = %00000001
+
+VIA2_PORTA_OUTPUTPINS = SD_CS | SD_SCK | SD_MOSI
+
+zp_sd_address = $40         ; 2 bytes
+zp_sd_currentsector = $42   ; 4 bytes
+zp_fat32_variables = $46    ; 24 bytes
+
+fat32_workspace = $400      ; two pages
+
+buffer = $600
+
 .segment "BUFFERS"
 KBD_BUFFER: .res $100
 CMD: .res $100
