@@ -3,10 +3,10 @@ KBD_RPTR = $01
 KBD_FLAGS = $02
 R_CTRL_C = $17
 R_BIOS_1 = $18
-R_OS_1 = $19
-R_OS_2 = $1A
-R_OS_3 = $1B
-R_OS_4 = $1C
+R_OS_1 = $1C
+R_OS_2 = $1D
+R_OS_3 = $1E
+R_OS_4 = $1F
 
 
 CURSOR_X = $03
@@ -15,7 +15,7 @@ FG_COLOR = $07
 BG_COLOR = $09
 TEXT_FLAGS = $11
 
-CMD_LEN = $0B
+CMD_LEN = $20
 BIOS_SYSCALL_N = $0C
 BIOS_STR_ADDR = $0D
 BIOS_STR_LEN = $0F
@@ -33,13 +33,13 @@ SD_MISO = %00000001
 
 VIA2_PORTA_OUTPUTPINS = SD_CS | SD_SCK | SD_MOSI
 
-zp_sd_address = $40         ; 2 bytes
-zp_sd_currentsector = $42   ; 4 bytes
-zp_fat32_variables = $46    ; 24 bytes
+zp_sd_address = $FA         ; 2 bytes
+zp_sd_currentsector = $FC   ; 4 bytes
+zp_fat32_variables = $03    ; 24 bytes
 
 fat32_workspace = $400      ; two pages
 
-buffer = $600
+buffer = $1000
 
 .segment "BUFFERS"
 KBD_BUFFER: .res $100
@@ -72,6 +72,8 @@ RESET:
     STA KBD_RPTR
     STA R_CTRL_C
     STA CMD_LEN
+    STA R_OS_3
+    STA R_OS_4
 
     LDA #$ff ; Set VIA Port B to output
     STA DDRB

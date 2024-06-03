@@ -35,6 +35,8 @@ INLIN1:
         cpx     #$EF
         bcs     L0C32
         ldx     #$EF
+  ;.endif
+  ;.if .def(APPLE) || .def(AUSTIN)
 L0C32:
         lda     #$00
         sta     INPUTBUFFER,x
@@ -57,6 +59,7 @@ INLINAIM:
     .ifdef AUSTIN
         cmp #$08 ; Backspace
         beq     L2420
+        ;beq L0C32
     .endif
     .ifndef CONFIG_NO_LINE_EDITING
         cmp     #$07

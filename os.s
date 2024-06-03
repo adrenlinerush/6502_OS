@@ -159,6 +159,8 @@ CMD_LOAD_FILE:
     BCS LOAD_FILE_EXIT
     JSR fat32_init
     BCS LOAD_FILE_EXIT
+    LDA #$00
+    STA R_OS_4
     JSR LOADFILE
 LOAD_FILE_EXIT:
     JSR LFCR
@@ -317,6 +319,8 @@ JSR_AT_ADDR:
 
 CLR_KBD_BUFFER:
     LDA #$00
+    STA R_OS_3
+    STA R_OS_4
     STA R_CTRL_C
     STA KBD_WPTR
     STA KBD_RPTR
@@ -387,6 +391,10 @@ OPENFILE:
   LDA #'F'
   JSR ECHO
 
+  LDA R_OS_4
+  CMP #$00
+  BNE DONTREADINTOMEMORY
+
   ; Read file contents into buffer
   lda #<buffer
   sta fat32_address
@@ -395,6 +403,7 @@ OPENFILE:
 
   jsr fat32_file_read
 
+DONTREADINTOMEMORY:
   RTS
 
 DISPLAYFILE:
